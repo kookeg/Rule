@@ -12,7 +12,7 @@ class Rule implements \Serializable
 
     private $value    = null;
 
-    public function __construct($field, $operator, $value, $table = '')
+    public function __construct($field = '', $operator = '', $value = '', $table = '')
     {
         $this->setField($field);
         $this->setOperator($operator);
@@ -63,6 +63,7 @@ class Rule implements \Serializable
             'field'    => $this->field,
             'operator' => $this->operator,
             'value'    => $this->value,    
+            'table'    => $this->table,
         ));
     }
 
@@ -71,6 +72,6 @@ class Rule implements \Serializable
         $this->field    = (string)$data['field'];
         $this->operator = $data['operator'];
         $this->value    = $data['value'];
+        $this->table    = $data['table'];
     }
-
 }

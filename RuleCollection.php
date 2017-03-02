@@ -1,21 +1,12 @@
 <?php 
 namespace Cooker\Rule;
 use       Cooker\Rule\Rule;
+use       Cooker\Rule\RuleGroup;
 
 class RuleCollection implements \IteratorAggregate, \Countable
 {
 
     private $rules    = array();  
-
-    private $connector = '';
-
-    public function __clone(){
-        foreach($this->rules as $name => $rule){
-            $this->rules[$name] = clone $rule;
-        }
-    }
-
-
 
     public function getIterator()
     {
@@ -37,9 +28,11 @@ class RuleCollection implements \IteratorAggregate, \Countable
         }
     } 
 
-    public function add($name, Rule $rule){
-        unset($this->rules[$name]); 
-        $this->rules[$name] = $rule;
+    public function add($name, $rule){
+        if(($rule instanceof Rule) || ($rule instanceof RuleGroup)){
+            unset($this->rules[$name]); 
+            $this->rules[$name] = $rule;
+        }
     }
 
     public function addCollection(RuleCollection $collection){
@@ -47,9 +40,5 @@ class RuleCollection implements \IteratorAggregate, \Countable
             unset($this->rules[$name]);     
             $this->rules[$name] = $rule;
         }
-    }
-
-    public function setConnector($connector = 'AND'){
-        $this->connector = $connector;
     }
 }
