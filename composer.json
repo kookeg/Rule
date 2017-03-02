@@ -1,0 +1,22 @@
+{
+    "name": "Cooker/Rule",
+    "description": "数据权限规则",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "cooker",
+            "email": "thinklang0917@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2"
+    },
+    "autoload": {
+        "psr-4": { "Cooker\\Rule\\": ""},
+         "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "minimum-stability": "stable"
+}
