@@ -1,5 +1,5 @@
 {
-    "name": "Cooker/Rule",
+    "name": "cooker/rule",
     "description": "数据权限规则",
     "type": "library",
     "license": "MIT",
