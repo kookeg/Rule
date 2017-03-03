@@ -45,7 +45,7 @@ class Rule implements \Serializable
     }
 
     public function getOperator(){
-        return $this;
+        return $this->operator;
     }
 
     public function setValue($value){
@@ -73,5 +73,10 @@ class Rule implements \Serializable
         $this->operator = $data['operator'];
         $this->value    = $data['value'];
         $this->table    = $data['table'];
+    }
+
+    public function __toString(){
+        $value = is_array($this->value) ? implode(',', $this->value) : $this->value;
+        return "{$this->table}.{$this->field}.{$this->operator}.{$value}"; 
     }
 }
