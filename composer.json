@@ -1,6 +1,6 @@
 {
     "name": "cooker/rule",
-    "description": "数据权限规则",
+    "description": "规则解析,rule,parse,data power",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -18,5 +18,5 @@
             "/Tests/"
         ]
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }

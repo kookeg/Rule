@@ -1,11 +1,34 @@
 <?php 
+
+/**
+ *
+ * The file is part of Cooker\Rule 
+ * (c) Cooker <thinklang0917@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ **/
+
 namespace Cooker\Rule;
 use       Cooker\Rule\QueryGeneratorInterface;
 use       Cooker\Rule\Rule;
 use       Cooker\Rule\RuleGroup;
 
+/**
+ * Sqlquerygenerator generate sql base on rule 
+ *
+ * @author Cooker <thinklang0917@gmail.com>
+ * 
+ **/
+
 class SqlQueryGenerator implements QueryGeneratorInterface
 {
+
+    /**
+     *
+     * {@inheritdoc}
+     *
+     **/
 
     public function generate($rule, $data = array())
     {
@@ -17,6 +40,18 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         } 
         return $sql;
     }
+
+
+    /**
+     *
+     * parse Rule 
+     *
+     * @access private 
+     * @param  object instanceof Rule 
+     * @param  array  $value 
+     * @return string 
+     *
+     **/ 
 
     private function parseRule(Rule $rule, $value = array())
     {
@@ -30,6 +65,17 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         }
         return $query;
     }
+
+    /**
+     *
+     * parse RuleGroup 
+     *
+     * @access private 
+     * @param  object instanceof RuleGroup 
+     * @param  array  $value 
+     * @return string 
+     *
+     **/ 
 
     private function parseRuleGroup(RuleGroup $ruleGroup, $value = array())
     {
@@ -47,19 +93,43 @@ class SqlQueryGenerator implements QueryGeneratorInterface
     }
 
 
-    private function filterValue($operator, $value){
+    /**
+     *
+     * validate value type  base self::$operatorRules
+     *
+     * @access private 
+     * @param  string $operator 
+     * @param  string $value 
+     * @return boolean
+     **/ 
+
+    private function filterValue($operator, $value)
+    {
         return in_array(gettype($value), self::$operatorRules[$operator]['value']);
     }
 
-    private function generateQuery($operator, $value, $field, $table = ''){
+    /**
+     * generate query string 
+     *
+     * @access private 
+     * @param  string $operator 
+     * @param  mixed  $value 
+     * @param  string $field 
+     * @param  string $table 
+     * @return string 
+     *
+     **/ 
+
+    private function generateQuery($operator, $value, $field, $table = '')
+    {
         $operatorRule = self::$operatorRules[$operator]; 
-        //如果是可执行的PHP代码，则执行PHP代码取得相应的value值
+        //check if PHP code, and eval PHP code
         $value = is_string($value) && (strpos($value, '@') === 0) ? eval("return " . substr($value, 1) . ';') : $value;
         if(isset($operatorRule['ext']['function'])){
             array_walk($value, function(&$item, $key){
                 $item = is_string($item) ? "'{$item}'" : $item;
             });
-            //注意 "\$value" 如果是单引号的话就不可以。
+            //notice "\$value" diff between ""  with ''。
             $value = eval("return ".str_replace('{value}', "\$value", $operatorRule['ext']['function']) . ';');
         }else{
             if(is_string($value)){
@@ -69,6 +139,13 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         $table = $table ? $table . '.' : '';
         return str_replace($operatorRule['build']['replace'], array($table, $field, $value), $operatorRule['build']['sql']);
     }
+
+    /**
+     * parse rules 
+     *
+     * @var array 
+     *
+     **/ 
 
     static private $operatorRules = array(
         'eq'  => array(
