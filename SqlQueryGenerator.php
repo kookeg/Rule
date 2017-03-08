@@ -24,6 +24,10 @@ use       Cooker\Rule\RuleGroup;
 class SqlQueryGenerator implements QueryGeneratorInterface
 {
 
+
+    private $fields = '';
+    private $table  = '';
+
     /**
      *
      * {@inheritdoc}
@@ -38,6 +42,9 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         }elseif($rule instanceof RuleGroup){
             $sql .= $this->parseRuleGroup($rule, $data); 
         } 
+        if($this->table && $this->fields){
+            $sql = "SELECT {$this->fields} FROM {$this->table} WHERE {$sql}";
+        }
         return $sql;
     }
 
@@ -58,10 +65,12 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         $query    = '';
         $value    = $value ? $value : $rule->getValue();
         $operator = $rule->getOperator();
-        $field    = $rule->getField();
+        $key      = $rule->getField();
         $table    = $rule->getTable();
+        $this->table  = $table ? $table : $this->table;
+        $this->fields = $rule->getField() ? $rule->getField() : $this->fields;
         if($this->filterValue($operator, $value)){
-            $query = $this->generateQuery($operator, $value, $field, $table); 
+            $query = $this->generateQuery($operator, $value, $key, $table); 
         }
         return $query;
     }
@@ -82,7 +91,10 @@ class SqlQueryGenerator implements QueryGeneratorInterface
         $sql = '(';
         foreach($ruleGroup->getRules() as $key => $obj){
             if($obj instanceof Rule){
-                $sql .= $this->parseRule($obj, $value) . " {$ruleGroup->getConnector()} "; 
+                $tmpQuery = $this->parseRule($obj, $value);
+                if($tmpQuery){
+                    $sql .=  $tmpQuery . " {$ruleGroup->getConnector()} "; 
+                }
             }elseif($obj instanceof RuleGroup){
                 $sql = trim($sql, $ruleGroup->getConnector() . " ") . ") {$obj->getConnector()} (";
                 $sql .= $this->parseRuleGroup($obj);
@@ -114,19 +126,19 @@ class SqlQueryGenerator implements QueryGeneratorInterface
      * @access private 
      * @param  string $operator 
      * @param  mixed  $value 
-     * @param  string $field 
+     * @param  string $key 
      * @param  string $table 
      * @return string 
      *
      **/ 
 
-    private function generateQuery($operator, $value, $field, $table = '')
+    private function generateQuery($operator, $value, $key, $table = '')
     {
         $operatorRule = self::$operatorRules[$operator]; 
         //check if PHP code, and eval PHP code
         $value = is_string($value) && (strpos($value, '@') === 0) ? eval("return " . substr($value, 1) . ';') : $value;
         if(isset($operatorRule['ext']['function'])){
-            array_walk($value, function(&$item, $key){
+            array_walk($value, function(&$item, $k){
                 $item = is_string($item) ? "'{$item}'" : $item;
             });
             //notice "\$value" diff between ""  with ''。
@@ -137,7 +149,7 @@ class SqlQueryGenerator implements QueryGeneratorInterface
             }
         }
         $table = $table ? $table . '.' : '';
-        return str_replace($operatorRule['build']['replace'], array($table, $field, $value), $operatorRule['build']['sql']);
+        return str_replace($operatorRule['build']['replace'], array($table, $key, $value), $operatorRule['build']['sql']);
     }
 
     /**

@@ -36,6 +36,12 @@ class Rule implements \Serializable
     private $field    = '';    
 
     /**
+     * @var string $field database.tablename.field 
+     **/
+
+    private $key      = '';
+
+    /**
      * @var string $operator eq,neq,in,not in... 
      **/
 
@@ -58,12 +64,22 @@ class Rule implements \Serializable
      *
      **/
 
-    public function __construct($field = '', $operator = '', $value = null, $table = '')
+    public function __construct($key = '', $operator = '', $value = null, $table = '', $field = '')
     {
+        $this->setKey($key);
         $this->setField($field);
         $this->setOperator($operator);
         $this->setValue($value);
         $this->setTable($table);
+    }
+
+    public function setKey($key){
+        $this->key = (string)$key;
+        return $this;
+    }
+
+    public function getKey(){
+        return trim($this->key, ',');
     }
 
     /**
@@ -192,6 +208,7 @@ class Rule implements \Serializable
     public function serialize()
     {
         return serialize(array(
+            'key'      => $this->key,
             'field'    => $this->field,
             'operator' => $this->operator,
             'value'    => $this->value,    
@@ -211,6 +228,7 @@ class Rule implements \Serializable
         $this->field    = (string)$data['field'];
         $this->operator = $data['operator'];
         $this->value    = $data['value'];
+        $this->key      = $data['key'];
         $this->table    = $data['table'];
     }
 
@@ -226,7 +244,7 @@ class Rule implements \Serializable
     public function __toString()
     {
         $value = is_array($this->value) ? implode(',', $this->value) : $this->value;
-        return "{$this->table}.{$this->field}.{$this->operator}.{$value}"; 
+        return "{$this->table}.{$this->field}.{$this->key}.{$this->operator}.{$value}"; 
     }
 
 
